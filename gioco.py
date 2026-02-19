@@ -150,22 +150,7 @@ class GameView(arcade.View):
         if key in [arcade.key.D, arcade.key.RIGHT]: self.right_pressed = False
 
 # --- VISTA GAME OVER ---
-class GameOverView(arcade.View):
-    def __init__(self, score):
-        super().__init__()
-        self.score = score
 
-    def on_draw(self):
-        self.clear()
-        arcade.draw_text("GAME OVER", SCREEN_WIDTH/2, SCREEN_HEIGHT/2, arcade.color.RED, 50, anchor_x="center")
-        arcade.draw_text(f"Punti: {self.score}", SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 60, arcade.color.WHITE, 24, anchor_x="center")
-        arcade.draw_text("Premi ESC per il menu", SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 120, arcade.color.GRAY, 16, anchor_x="center")
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.ESCAPE or key == arcade.key.ENTER:
-            self.window.show_view(MenuView())
-
-# --- MAIN ---
 def main():
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, "Miner Runner 3.0")
     window.show_view(MenuView())
