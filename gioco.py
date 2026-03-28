@@ -74,18 +74,23 @@ class mymenu(arcade.View):
 
     def on_mouse_press(self, x, y, button, modifiers):
 
-        if self.button1_box.collides_with_point((x, y)):
-            print("PLAY premuto")
-            game = GameView()
-            self.window.show_view(game)
+# --- VISTA GAME OVER ---
+class GameOverView(arcade.View):
+    def __init__(self, score):
+        super().__init__()
+        self.score = score
 
-        if self.button2_box.collides_with_point((x, y)):
-            print("OPTIONS premuto")
+    def on_draw(self):
+        self.clear()
+        arcade.draw_text("GAME OVER", SCREEN_WIDTH/2, SCREEN_HEIGHT/2, arcade.color.RED, 50, anchor_x="center")
+        arcade.draw_text(f"Punti: {self.score}", SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 60, arcade.color.WHITE, 24, anchor_x="center")
+        arcade.draw_text("Premi ESC per il menu", SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 120, arcade.color.GRAY, 16, anchor_x="center")
 
-        if self.button3_box.collides_with_point((x, y)):
-            print("EXIT premuto")
-            arcade.exit()
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.ESCAPE or key == arcade.key.ENTER:
+            self.window.show_view(MenuView())
 
+# --- MAIN ---
 def main():
     window = GameWindow()
     menu = mymenu()
