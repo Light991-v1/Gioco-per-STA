@@ -1,12 +1,15 @@
 import arcade
 import arcade.gui
+from gioco import (WINDOW_HEIGHT,WINDOW_WIDTH)
+from play import GameView
+
 
 class PauseView(arcade.View):
     def __init__(self, game_view):
         super().__init__()
         self.game_view = game_view
 
-        self.game_view.camera.position = (self.window.width // 2, self.window.height // 2)
+        
 
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
@@ -37,11 +40,13 @@ class PauseView(arcade.View):
         arcade.exit()
 
     def on_draw(self):
-        self.clear()
-        self.game_view.camera.use()
+        self.game_view.on_draw()
+        
+
+        
         bg = self.game_view.backgrounds
-        bg.offset = self.game_view.camera.bottom_left
-        bg.pos = self.game_view.camera.bottom_left
+        
+        
         bg.draw()
         self.game_view.scene.draw()
 
@@ -49,19 +54,16 @@ class PauseView(arcade.View):
         h = self.window.height
 
         arcade.draw_rect_filled(
-            arcade.XYWH(w // 2, h // 2, w, h),
+            arcade.XYWH(self.position, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT),
             (0, 0, 0, 150)
         )
-        arcade.draw_text(
-            "PAUSA",
-            w // 2,
-            h // 2 + 150,
-            arcade.color.WHITE,
-            48,
-            anchor_x="center",
-            anchor_y="center"
-        )
+        self.pause_text.draw()
         self.manager.draw()
+
+    def on_update(self, delta_time):
+        self.game_view.on_update(delta_time)
+        self.pause_text=arcade.Text("PAUSA", x=self.game_view.player_sprite.center_x, y = WINDOW_HEIGHT/2 + 200, color = arcade.color.WHITE, font_name = "Broadway BT", font_size = 48, anchor_x="center", anchor_y="center")
+        self.position = self.game_view.player_sprite.center_x
 
     def on_hide_view(self):
         self.manager.disable()

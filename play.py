@@ -18,8 +18,8 @@ class GameView(arcade.View):
         base_path = os.path.dirname(os.path.abspath(__file__))
         bg_size = (WINDOW_WIDTH, WINDOW_HEIGHT)
 
-        self.backgrounds.add_from_file(os.path.join(base_path, "assets", "sfondo_gioco.png"), size=bg_size, depth=10.0)
-        self.backgrounds.add_from_file(os.path.join(base_path, "assets", "sfondo_gioco.png"), size=(WINDOW_WIDTH, 500), depth=3.0)
+        self.backgrounds.add_from_file(os.path.join(base_path, "assets", "sfondo1.png"), size=bg_size, depth=10.0)
+        self.backgrounds.add_from_file(os.path.join(base_path, "assets", "sfondo2.png"), size=(WINDOW_WIDTH, 500), depth=3.0)
 
         self.player_sprite = arcade.Sprite(os.path.join(base_path, "assets", "sfondo_gioco.png"), scale=0.5)
         self.x_velocity = 0
