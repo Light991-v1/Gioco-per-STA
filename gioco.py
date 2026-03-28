@@ -1,102 +1,210 @@
 import arcade
+import arcade.gui
+import arcade.future.background as background
+import os
 
-class GameWindow(arcade.Window):
+# misure
+WINDOW_WIDTH = 1920
+WINDOW_HEIGHT = 1080
+WINDOW_TITLE = "Il mio gioco"
+CAMERA_SPEED = 0.1
+GRAVITY = 1
+
+# menu
+class MenuView(arcade.View):
     def __init__(self):
-        super().__init__(1920, 1080, fullscreen=True)
+        super().__init__()
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
 
-    def on_key_press(self, symbol, modifiers):
-        if symbol == arcade.key.ESCAPE:
-            self.set_fullscreen(False)
+        play_button = arcade.gui.UIFlatButton(text="PLAY", width=200)
+        quit_button = arcade.gui.UIFlatButton(text="ESCI", width=200)
 
-    def on_key_release(self, symbol, modifiers):
-        if symbol == arcade.key.F11:
-            self.set_fullscreen(True)
+        play_button.on_click = self.on_play
+        quit_button.on_click = self.on_quit
 
+        layout = arcade.gui.UIBoxLayout(spacing=20)
+        layout.add(play_button)
+        layout.add(quit_button)
+
+        self.manager.add(arcade.gui.UIAnchorLayout(children=[layout]))
+
+    def on_play(self, event):
+        game_view = GameView()
+        game_view.setup()
+        self.window.show_view(game_view)
+
+    def on_quit(self, event):
+        arcade.exit()
+
+    def on_draw(self):
+        self.clear()
+        arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
+        self.manager.draw()
+
+    def on_hide_view(self):
+        self.manager.disable()
+
+
+# gioco
 class GameView(arcade.View):
     def __init__(self):
         super().__init__()
-        self.text = "SEI NEL GIOCO!"
+        self.scene = None
+        self.physics_engine = None
+        self.background_color = arcade.csscolor.CORNFLOWER_BLUE
+        self.camera = arcade.Camera2D()
+        self.backgrounds = background.ParallaxGroup()
 
-    def on_show_view(self):
-        arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
+        base_path = os.path.dirname(os.path.abspath(__file__))
+        bg_size = (WINDOW_WIDTH, WINDOW_HEIGHT)
+
+        # CORREZIONE PERCORSI
+        self.backgrounds.add_from_file(os.path.join(base_path, "assets", "sfondo_gioco.png"), size=bg_size, depth=10.0)
+        self.backgrounds.add_from_file(os.path.join(base_path, "assets", "sfondo_gioco.png"), size=(WINDOW_WIDTH, 500), depth=3.0)
+
+        self.player_sprite = arcade.Sprite(os.path.join(base_path, "assets", "sfondo_gioco.png"), scale=0.5)
+        self.x_velocity = 0
+
+    def setup(self):
+        self.scene = arcade.Scene()
+        self.player_sprite.scale = 0.5
+        self.player_sprite.center_x = 64
+        self.player_sprite.center_y = 128
+        self.scene.add_sprite("Player", self.player_sprite)
+
+        self.scene.add_sprite_list("Walls", use_spatial_hash=True)
+
+        base_path = os.path.dirname(os.path.abspath(__file__))
+
+        # CORREZIONE PERCORSI
+        for x in range(0, 12000, 64):
+            wall = arcade.Sprite(os.path.join(base_path, "assets", "sfondo_gioco.png"), scale=0.5)
+            wall.center_x = x
+            wall.center_y = 32
+            self.scene.add_sprite("Walls", wall)
+
+        self.physics_engine = arcade.PhysicsEnginePlatformer(
+            self.player_sprite, walls=self.scene["Walls"], gravity_constant=GRAVITY
+        )
+        self.velocita = 4
+        self.score = 0
 
     def on_draw(self):
         self.clear()
-        arcade.draw_text(self.text, 100, 100, arcade.color.WHITE, 40)
+        self.camera.use()
+        bg = self.backgrounds
+        bg.offset = self.camera.bottom_left
+        bg.pos = self.camera.bottom_left
+        bg.draw()
+        if self.scene:
+            self.scene.draw()
 
-    def on_key_press(self, symbol, modifiers):
-        if symbol == arcade.key.ESCAPE:
-            menu = mymenu()
-            self.window.show_view(menu)
-
-class mymenu(arcade.View):
-    def __init__(self):
-        super().__init__()
-
-        self.background_menu = arcade.load_texture("./Gioco-per-STA/assets/sfondo_menu.png")
-
-        self.button1 = arcade.Sprite("./Gioco-per-STA/assets/play.png")
-        self.button2 = arcade.Sprite("./Gioco-per-STA/assets/options.png")
-        self.button3 = arcade.Sprite("./Gioco-per-STA/assets/exit.png")
-
-        self.button1.center_x = 708 + 504 // 2
-        self.button1.center_y = 610 + 120 // 2
-
-        self.button2.center_x = 708 + 504 // 2
-        self.button2.center_y = 480 + 120 // 2
-
-        self.button3.center_x = 708 + 504 // 2
-        self.button3.center_y = 350 + 120 // 2
-
-        self.button1_box = arcade.LBWH(708, 610, 504, 120)
-        self.button2_box = arcade.LBWH(708, 480, 504, 120)
-        self.button3_box = arcade.LBWH(708, 350, 504, 120)
-
-    def on_draw(self):
-        self.clear()
-
-        arcade.draw_texture_rect(
-            self.background_menu,
-            arcade.LBWH(0, 0, self.window.width, self.window.height)
+    def pan_camera_to_player(self):
+        self.camera.position = arcade.math.lerp_2d(
+            self.camera.position,
+            (self.player_sprite.center_x, self.window.height // 2),
+            CAMERA_SPEED
         )
 
-        arcade.draw_sprite(self.button1) 
-        arcade.draw_sprite(self.button2) 
-        arcade.draw_sprite(self.button3)
+    def on_update(self, delta_time: float):
+        if self.physics_engine:
+            self.physics_engine.update()
+        self.player_sprite.center_x += self.x_velocity * delta_time
+        self.pan_camera_to_player()
 
-    def on_key_press(self, symbol, modifiers):
-        if symbol == arcade.key.ESCAPE:
-            self.window.set_fullscreen(False)
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.ESCAPE:
+            self.window.show_view(PauseView(self))
+        if key == arcade.key.R:
+            self.setup()
+        if key == arcade.key.RIGHT:
+            self.x_velocity = 200
+        if key == arcade.key.LEFT:
+            self.x_velocity = -200
 
-    def on_key_release(self, symbol, modifiers):
-        if symbol == arcade.key.F11:
-            self.window.set_fullscreen(True)
+    def on_key_release(self, key, modifiers):
+        if key in (arcade.key.RIGHT, arcade.key.LEFT):
+            self.x_velocity = 0
 
-    def on_mouse_press(self, x, y, button, modifiers):
 
-# --- VISTA GAME OVER ---
-class GameOverView(arcade.View):
-    def __init__(self, score):
+# pausa
+class PauseView(arcade.View):
+    def __init__(self, game_view):
         super().__init__()
-        self.score = score
+        self.game_view = game_view
+
+        # 🔥 Reset della camera quando entri in pausa
+        self.game_view.camera.position = (self.window.width // 2, self.window.height // 2)
+
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+
+        resume_button = arcade.gui.UIFlatButton(text="RIPRENDI", width=200)
+        menu_button   = arcade.gui.UIFlatButton(text="MENU PRINCIPALE", width=200)
+        quit_button   = arcade.gui.UIFlatButton(text="ESCI", width=200)
+
+        resume_button.on_click = self.on_resume
+        menu_button.on_click   = self.on_menu
+        quit_button.on_click   = self.on_quit
+
+        layout = arcade.gui.UIBoxLayout(spacing=20)
+        layout.add(resume_button)
+        layout.add(menu_button)
+        layout.add(quit_button)
+
+        self.manager.add(arcade.gui.UIAnchorLayout(children=[layout]))
+
+
+    def on_resume(self, event):
+        self.window.show_view(self.game_view)
+
+    def on_menu(self, event):
+        self.window.show_view(MenuView())
+
+    def on_quit(self, event):
+        arcade.exit()
 
     def on_draw(self):
         self.clear()
-        arcade.draw_text("GAME OVER", SCREEN_WIDTH/2, SCREEN_HEIGHT/2, arcade.color.RED, 50, anchor_x="center")
-        arcade.draw_text(f"Punti: {self.score}", SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 60, arcade.color.WHITE, 24, anchor_x="center")
-        arcade.draw_text("Premi ESC per il menu", SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 120, arcade.color.GRAY, 16, anchor_x="center")
 
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.ESCAPE or key == arcade.key.ENTER:
-            self.window.show_view(MenuView())
+        # sfondo congelato
+        self.game_view.camera.use()
+        bg = self.game_view.backgrounds
+        bg.offset = self.game_view.camera.bottom_left
+        bg.pos = self.game_view.camera.bottom_left
+        bg.draw()
+        if self.game_view.scene:
+            self.game_view.scene.draw()
 
-# --- MAIN ---
+        w = self.window.width
+        h = self.window.height
+
+        arcade.draw_rect_filled(
+            arcade.XYWH(w // 2, h // 2, w, h),
+            (0, 0, 0, 150)
+        )
+        arcade.draw_text(
+            "PAUSA",
+            w // 2,
+            h // 2 + 150,
+            arcade.color.WHITE,
+            48,
+            anchor_x="center",
+            anchor_y="center"
+        )
+        self.manager.draw()
+
+    def on_hide_view(self):
+        self.manager.disable()
+
+
 def main():
-    window = GameWindow()
-    menu = mymenu()
-    window.show_view(menu)
+    global WINDOW_WIDTH, WINDOW_HEIGHT
+    window = arcade.Window(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE, fullscreen=True)
+    WINDOW_WIDTH, WINDOW_HEIGHT = window.get_size()
+    menu_view = MenuView()
+    window.show_view(menu_view)
     arcade.run()
 
-
-if __name__ == "__main__":
-    main()
+main()
