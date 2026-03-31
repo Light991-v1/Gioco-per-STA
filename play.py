@@ -107,6 +107,11 @@ class GameView(arcade.View):
         self.player_sprite.update_animation(delta_time)
         self.pan_camera_to_player()
 
+        if self.player_sprite.change_x < 0: 
+            self.player_sprite.scale = (-PLAYER_SCALE, PLAYER_SCALE)
+        elif self.player_sprite.change_x > 0:
+            self.player_sprite.scale = (PLAYER_SCALE, PLAYER_SCALE)
+
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ESCAPE:
             from pausa import PauseView

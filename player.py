@@ -8,20 +8,7 @@ FRAME_SIZE = 96
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
 
-def _crea_sheet_specchiato(percorso: str) -> str:
-    img = Image.open(percorso).convert("RGBA")
-    w, h = img.size
-    num_frame = w // FRAME_SIZE
 
-    nuova = Image.new("RGBA", (w, h))
-    for i in range(num_frame):
-        crop = img.crop((i * FRAME_SIZE, 0, (i + 1) * FRAME_SIZE, FRAME_SIZE))
-        flip = crop.transpose(Image.FLIP_LEFT_RIGHT)
-        nuova.paste(flip, (i * FRAME_SIZE, 0))
-
-    percorso_flip = percorso.replace(".png", "_flip.png")
-    nuova.save(percorso_flip)
-    return percorso_flip
 
 
 class Player(SpriteAnimato):
@@ -40,7 +27,7 @@ class Player(SpriteAnimato):
 
         for nome, file, n_frame, durata, loop, default in self.ANIMAZIONI:
             percorso       = os.path.join(_HERE, file)
-            percorso_flip  = _crea_sheet_specchiato(percorso)
+
 
             self.aggiungi_animazione(
                 nome=nome + "_dx",
@@ -53,7 +40,7 @@ class Player(SpriteAnimato):
             )
             self.aggiungi_animazione(
                 nome=nome + "_sx",
-                percorso=percorso_flip,
+                percorso=percorso,
                 frame_width=FRAME_SIZE, frame_height=FRAME_SIZE,
                 num_frame=n_frame, colonne=n_frame,
                 durata=durata,
