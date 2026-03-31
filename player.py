@@ -7,10 +7,6 @@ from sprite_animato import SpriteAnimato
 FRAME_SIZE = 96
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
-
-
-
-
 class Player(SpriteAnimato):
 
     ANIMAZIONI = [

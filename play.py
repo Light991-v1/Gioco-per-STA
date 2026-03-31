@@ -5,8 +5,8 @@ from player import Player
 
 CAMERA_SPEED  = 0.1
 GRAVITY       = 1
-PLAYER_SPEED      = 250
-PLAYER_JUMP_SPEED = 18
+PLAYER_SPEED      = 300
+PLAYER_JUMP_SPEED = 20
 PLAYER_SCALE      = 2.5
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
@@ -91,7 +91,6 @@ class GameView(arcade.View):
             self.player_sprite.change_x = 0
 
     def _clamp_player(self):
-        """Impedisce al personaggio di uscire dai bordi del livello."""
         half = self.player_sprite.width // 2
         if self.player_sprite.left < LEVEL_START:
             self.player_sprite.left = LEVEL_START
@@ -126,11 +125,13 @@ class GameView(arcade.View):
             if self.physics_engine.can_jump():
                 self.player_sprite.change_y = PLAYER_JUMP_SPEED
 
-        if key == arcade.key.SPACE:
-            self.player_sprite.trigger_attack()
-
     def on_key_release(self, key, modifiers):
         if key == arcade.key.D:
             self.right_pressed = False
         if key == arcade.key.A:
             self.left_pressed = False
+    
+    def on_mouse_press(self, x, y, key, modifiers):
+        if key == arcade.MOUSE_BUTTON_LEFT:
+            self.player_sprite.trigger_attack()
+
