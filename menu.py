@@ -21,7 +21,7 @@ class MenuView(arcade.View):
         self.manager.add(arcade.gui.UIAnchorLayout(children=[layout]))
 
     def on_play(self, event):
-        from play import GameView   # ← IMPORT QUI
+        from play import GameView   
         game_view = GameView()
         game_view.setup()
         self.window.show_view(game_view)
