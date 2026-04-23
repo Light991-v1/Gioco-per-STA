@@ -13,10 +13,10 @@ class Nemico(SpriteAnimato):
 
     # stesse animazioni del player, il nemico usa gli stessi file
     ANIMAZIONI = [
-        ("idle",   "assets/IDLE.png",      10,  0.8, True,  True),
-        ("run",    "assets/RUN.png",        16,  0.5, True,  False),
-        ("attack", "assets/ATTACK 1.png",    7,  0.3, False, False),
-        ("hurt",   "assets/HURT.png",        4,  0.3, False, False),
+        ("idle",   "assets/IDLEn.png",      10,  0.8, True,  True),
+        ("run",    "assets/RUNn.png",        16,  0.5, True,  False),
+        ("attack", "assets/ATTACK-n.png",    7,  0.3, False, False),
+        ("hurt",   "assets/HURTn.png",        4,  0.3, False, False),
     ]
 
     def __init__(self, x: float, y: float):

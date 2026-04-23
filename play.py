@@ -260,6 +260,9 @@ class GameView(arcade.View):
             if self.physics_engine.can_jump():
                 self.player_sprite.change_y = PLAYER_JUMP_SPEED
 
+        if key == arcade.key.L:
+            self.player_sprite.trigger_attack()
+
     def on_key_release(self, key, modifiers):
         # quando lasci il tasto il player si ferma in quella direzione
         if key == arcade.key.D:
